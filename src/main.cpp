@@ -184,21 +184,38 @@ void diffSelect() {
   int rawVal = analogRead(DIFFPOT);
   diffLvl = map(rawVal, 0, 1023, 1, 16);
   display.setCursor(0, 1);
-  Serial.println("Difficulty level: " + String(diffLvl));
 
-  (diffLvl == 16) ? superHard = true : superHard = false;
+  static int lastDiffLvl = -1;
+  // Only redraw the difficulty row when the value actually changes to avoid flicker
+  Serial.println(String(lastDiffLvl) + " / " + String(diffLvl));
+
+  if(diffLvl == lastDiffLvl) return;
+  lastDiffLvl = diffLvl;
+
+  (diffLvl > 14) ? superHard = true : superHard = false;
 
   if(superHard) {
-    for(int i = 0; i < 16; i++) {
+    // write the first three characters as blocks
+    for(int i = 0; i < 3; i++) {
+      display.setCursor(i, 1);
       display.write(byte(blockIndex));
     }
 
+    // print the "SUPER HARD" text starting at column 3
     display.setCursor(3, 1);
     display.print("SUPER HARD");
+
+    // write the last three characters as blocks
+    for(int i = 13; i < 16; i++) {
+      display.setCursor(i, 1);
+      display.write(byte(blockIndex));
+    }
 
     return;
   }
 
+  // non-superHard: draw the bar from column 0
+  display.setCursor(0, 1);
   for(int i = 0; i < 16; i++) {
     if(i < diffLvl) {
       display.write(byte(blockIndex));
@@ -218,7 +235,7 @@ void cycleLEDs() {
     int eventDecision = random(0, 10);
 
     if(eventDecision == 7) scrollReverse = !scrollReverse;
-    if(eventDecision < 2) delay(50); //20% chance to throw off player's timing
+    if(eventDecision < 2) delay(100); //20% chance to throw off player's timing
 
     Serial.println(String(eventDecision) + " / " + String(scrollReverse));    //print for debugging
   }
