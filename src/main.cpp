@@ -8,11 +8,11 @@ Oct. 2025 - Nov. 2025
 ---------------------------- */
 
 //libaries, object definitions, function declarations
-#include <Adafruit_LiquidCrystal.h>
-#include <Adafruit_GFX.h>
-#include "Encourager/Encourager.cpp"
+#include <LiquidCrystal_I2C.h>
+#include "Ext_Functions/Encourager.cpp"
+#include "Ext_Functions/SlideText/SlideText.h"
 
-Adafruit_LiquidCrystal display(0x27);
+LiquidCrystal_I2C display(0x27, 16, 2);
 Encourager encourage(display);
 
 void diffSelect();
@@ -69,9 +69,12 @@ void setup() {
   
   //display setup
   display.createChar(blockIndex, blockArr);
-  display.begin(16, 2);
-  display.setBacklight(HIGH);
+  display.init();
+  display.backlight();
   display.setCursor(0, 0);
+
+  //sliding text setup
+  SlideText::setDisplay(display);
 }
 
 
@@ -79,15 +82,15 @@ void setup() {
 void loop() {
   //-------DIFFICULTY SELECT-----------------------------------------------
 
-  display.print("Turn knob to");
+  SlideText::slideText("Turn knob to");
   display.setCursor(0, 1);
-  display.print("pick difficulty");
+  SlideText::slideText("pick difficulty");
   delay(2000);
   display.clear();
   tone(BUZZERPIN, 1000, 50); //beep to signal start of selection
 
   display.setCursor(0, 0);
-  display.print("Difficulty:");
+  SlideText::slideText("Difficulty:");
   
   do {
     stopButt = !digitalRead(STOPBUTTPIN);
@@ -192,6 +195,7 @@ void diffSelect() {
 
     display.setCursor(3, 1);
     display.print("SUPER HARD");
+
     return;
   }
 

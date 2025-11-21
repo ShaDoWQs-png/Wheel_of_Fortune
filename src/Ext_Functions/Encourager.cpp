@@ -1,15 +1,13 @@
-#pragma once
-
 #include <Arduino.h>
-#include <Adafruit_LiquidCrystal.h>
+#include <LiquidCrystal_I2C.h>
 
 class Encourager {
   private:
-        Adafruit_LiquidCrystal &_lcd;
+        LiquidCrystal_I2C &_lcd;
         int _line;
 
   public:
-    Encourager(Adafruit_LiquidCrystal &lcd) : _lcd(lcd) {};
+    Encourager(LiquidCrystal_I2C &lcd) : _lcd(lcd) {};
 
       void start(int line = 0) {
         _line = line;
