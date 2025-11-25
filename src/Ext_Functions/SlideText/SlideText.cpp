@@ -14,7 +14,7 @@ namespace SlideText {
 
         unsigned long preTime;
 
-        for(int i = 0; i < txt.length(); i++) {
+        for(unsigned int i = 0; i < txt.length(); i++) {
             lcd->print(txt[i]);
 
             preTime = millis();

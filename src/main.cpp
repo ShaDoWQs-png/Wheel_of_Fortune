@@ -45,12 +45,15 @@ byte blockArr[8] {
 //general variables
 int diffLvl;
 bool stopButt;
-uint32_t currentLED = 1;
+// LEDs are tracked by index instead of by bitmask, prevents wrap bugs
+constexpr int LED_COUNT = 24;
+constexpr int WIN_INDEX = 15; 
+int currentLEDIndex = 0;
 unsigned int score = 0;
 bool superHard = false;
 
 void setup() {
-  digitalWrite(RESETPIN, HIGH);  // Stop arduino from looping forever
+  digitalWrite(RESETPIN, HIGH);
 
   Serial.begin(9600);
   randomSeed(analogRead(0));
@@ -103,7 +106,6 @@ void loop() {
 
   //-------GAME INTRO------------------------------------------------------
   
-  
   display.setCursor(0, 0);
   display.print("Ready?");
 
@@ -133,7 +135,7 @@ void loop() {
     cycleLEDs();
 
     //check for score increment
-    if((currentLED & 0x8000) && stopButt) {
+    if((currentLEDIndex == WIN_INDEX) && stopButt) {
       score++;
       encourage.clear();
 
@@ -241,15 +243,22 @@ void cycleLEDs() {
   }
   
   if(!stopButt) {
-    (scrollReverse) ? currentLED >>= 1 : currentLED <<= 1;
-    if(currentLED == 0) currentLED = 0x80000;
-    if(currentLED > 0x800000) currentLED = 1;
+    // update index with wrap instead of shifting a mask; this avoids accidental over-/underflow
+    if(scrollReverse) {
+      currentLEDIndex = (currentLEDIndex + LED_COUNT - 1) % LED_COUNT;
+    } else {
+      currentLEDIndex = (currentLEDIndex + 1) % LED_COUNT;
+    }
 
-  } else if (stopButt && (currentLED & 0x8000) == 0) {
-      currentLED = randomGen();
+  } else if (stopButt && (currentLEDIndex != WIN_INDEX)) {
+      while(stopButt) {
+        stopButt = digitalRead(STOPBUTTPIN);
+        currentLEDIndex = randomGen();
+      } 
   }
   
   //int split for shiftOut()
+  uint32_t currentLED = (1UL << currentLEDIndex);
   byte lowByte = currentLED & 0xFF;
   byte midByte = (currentLED >> 8) & 0xFF;
   byte highByte = (currentLED >> 16) & 0xFF;
@@ -261,15 +270,14 @@ void cycleLEDs() {
   shiftOut(DATAPIN, CLKPIN, LSBFIRST, highByte);
   digitalWrite(LATCHPIN, HIGH);
 
-  (!superHard) ? delay(300 - (diffLvl * 10)) : delay(75); //delay based on difficulty
+  (!superHard) ? delay(300 - (diffLvl * 15)) : delay(50); //delay based on difficulty
 }
 
 //random number generator that avoids winning position
 int randomGen() {
-  int val = random(1, 0x800000);
-
-  while(val & 0x8000) {
-    val = random(1, 0x800000);
+  int idx = random(0, LED_COUNT);
+  while(idx == WIN_INDEX) {
+    idx = random(0, LED_COUNT);
   }
-  return val;
+  return idx;
 }
