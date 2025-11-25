@@ -53,8 +53,6 @@ unsigned int score = 0;
 bool superHard = false;
 
 void setup() {
-  digitalWrite(RESETPIN, HIGH);
-
   Serial.begin(9600);
   randomSeed(analogRead(0));
   
@@ -71,8 +69,8 @@ void setup() {
   pinMode(RESETPIN, OUTPUT);
   
   //display setup
-  display.createChar(blockIndex, blockArr);
   display.init();
+  display.createChar(blockIndex, blockArr);
   display.backlight();
   display.setCursor(0, 0);
 
@@ -90,7 +88,6 @@ void loop() {
   SlideText::slideText("pick difficulty");
   delay(2000);
   display.clear();
-  tone(BUZZERPIN, 1000, 50); //beep to signal start of selection
 
   display.setCursor(0, 0);
   SlideText::slideText("Difficulty:");
@@ -200,7 +197,7 @@ void diffSelect() {
     // write the first three characters as blocks
     for(int i = 0; i < 3; i++) {
       display.setCursor(i, 1);
-      display.write(byte(blockIndex));
+      display.write((byte)blockIndex);
     }
 
     // print the "SUPER HARD" text starting at column 3
@@ -251,10 +248,24 @@ void cycleLEDs() {
     }
 
   } else if (stopButt && (currentLEDIndex != WIN_INDEX)) {
-      while(stopButt) {
-        stopButt = digitalRead(STOPBUTTPIN);
+      // While the button is held (active-low), show a random LED to give feedback.
+      // Use digitalRead directly here because the pin is active-low (0 when pressed).
+      while(digitalRead(STOPBUTTPIN) == LOW) {
         currentLEDIndex = randomGen();
-      } 
+
+        // Update the displays immediately to show the random LED while the button is still pressed
+        uint32_t tempLED = (1UL << currentLEDIndex);
+        byte l = tempLED & 0xFF;
+        byte m = (tempLED >> 8) & 0xFF;
+        byte h = (tempLED >> 16) & 0xFF;
+        digitalWrite(LATCHPIN, LOW);
+        shiftOut(DATAPIN, CLKPIN, LSBFIRST, l);
+        shiftOut(DATAPIN, CLKPIN, LSBFIRST, m);
+        shiftOut(DATAPIN, CLKPIN, LSBFIRST, h);
+        digitalWrite(LATCHPIN, HIGH);
+
+        delay(5); // reasonable visible speed for the randomizer
+      }
   }
   
   //int split for shiftOut()
