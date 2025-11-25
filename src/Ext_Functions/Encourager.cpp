@@ -47,10 +47,14 @@ class Encourager {
             _lcd.print("What Timing!");
             break;
           }
+
+          return;
         };
 
       void clear() {
         _lcd.setCursor(0, _line);
         _lcd.print("                ");
+
+        return;
       };
 };

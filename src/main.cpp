@@ -15,6 +15,7 @@ Oct. 2025 - Nov. 2025
 LiquidCrystal_I2C display(0x27, 16, 2);
 Encourager encourage(display);
 
+void wait(int dur);
 void diffSelect();
 void cycleLEDs();
 int randomGen();
@@ -86,20 +87,20 @@ void loop() {
   SlideText::slideText("Turn knob to");
   display.setCursor(0, 1);
   SlideText::slideText("pick difficulty");
-  delay(2000);
+  wait(2000);
   display.clear();
 
   display.setCursor(0, 0);
   SlideText::slideText("Difficulty:");
   
   do {
-    stopButt = !digitalRead(STOPBUTTPIN);
+    stopButt = (digitalRead(STOPBUTTPIN) == LOW);
     diffSelect();
   } while(!stopButt);
 
   display.clear();
   tone(BUZZERPIN, 1000, 200); //beep to confirm selection
-  delay(500);
+  wait(500);
 
   //-------GAME INTRO------------------------------------------------------
   
@@ -108,7 +109,7 @@ void loop() {
 
   for (int i = 0; i < 3; i++) {
     tone(BUZZERPIN, 750, 100);
-    delay(750);
+    wait(750);
   }
 
   display.clear();
@@ -134,11 +135,11 @@ void loop() {
     //check for score increment
     if((currentLEDIndex == WIN_INDEX) && stopButt) {
       score++;
-      encourage.clear();
+      //encourage.clear();
 
-      if(score == 3 || score == 7) encourage.start(1); //write message on line 1, not line 0
+      //if(score == 3 || score == 7) encourage.start(1); //write message on line 1, not line 0
 
-      tone(BUZZERPIN, 2000, 50);
+      //tone(BUZZERPIN, 2000, 50);
       Serial.println("Score: " + String(score));
       
       display.setCursor(7, 0);  //print score to display
@@ -146,7 +147,7 @@ void loop() {
         
       // Wait for button release to stop multiple increments
       while(stopButt) {
-        stopButt = !digitalRead(STOPBUTTPIN);
+        stopButt = (digitalRead(STOPBUTTPIN) == LOW);
         delay(10);
       }
     }
@@ -160,7 +161,7 @@ void loop() {
   display.setCursor(0, 1);
   display.print("See you later...");
 
-  //win song
+  //win song 
   tone(BUZZERPIN, 523, 150);
   delay(100);
   tone(BUZZERPIN, 659, 150);
@@ -226,7 +227,7 @@ void diffSelect() {
 
 //cycle through LEDs based on difficulty setting
 void cycleLEDs() {
-  stopButt = !digitalRead(STOPBUTTPIN);
+  stopButt = (digitalRead(STOPBUTTPIN) == LOW);
   static bool scrollReverse = false;
 
   //make things harder if player says so
@@ -234,9 +235,7 @@ void cycleLEDs() {
     int eventDecision = random(0, 10);
 
     if(eventDecision == 7) scrollReverse = !scrollReverse;
-    if(eventDecision < 2) delay(100); //20% chance to throw off player's timing
-
-    Serial.println(String(eventDecision) + " / " + String(scrollReverse));    //print for debugging
+    if(eventDecision < 2) wait(100); //20% chance to throw off player's timing
   }
   
   if(!stopButt) {
@@ -249,7 +248,6 @@ void cycleLEDs() {
 
   } else if (stopButt && (currentLEDIndex != WIN_INDEX)) {
       // While the button is held (active-low), show a random LED to give feedback.
-      // Use digitalRead directly here because the pin is active-low (0 when pressed).
       while(digitalRead(STOPBUTTPIN) == LOW) {
         currentLEDIndex = randomGen();
 
@@ -264,7 +262,7 @@ void cycleLEDs() {
         shiftOut(DATAPIN, CLKPIN, LSBFIRST, h);
         digitalWrite(LATCHPIN, HIGH);
 
-        delay(5); // reasonable visible speed for the randomizer
+        wait(5); // looks like random data (cool)
       }
   }
   
@@ -281,14 +279,23 @@ void cycleLEDs() {
   shiftOut(DATAPIN, CLKPIN, LSBFIRST, highByte);
   digitalWrite(LATCHPIN, HIGH);
 
-  (!superHard) ? delay(300 - (diffLvl * 15)) : delay(50); //delay based on difficulty
+  (!superHard) ? wait(200 - (diffLvl * 10)) : wait(50); //delay based on difficulty
 }
 
 //random number generator that avoids winning position
 int randomGen() {
   int idx = random(0, LED_COUNT);
   while(idx == WIN_INDEX) {
-    idx = random(0, LED_COUNT);
+    int idx = random(0, LED_COUNT);
   }
   return idx;
+}
+
+//non-blocking delay
+void wait(int dur) {
+  unsigned long preTime = millis();
+
+  while((millis() - preTime) < dur) {}
+
+  return;
 }
