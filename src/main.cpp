@@ -1,9 +1,9 @@
 /* ----------------------------
 
-WHEEL OF FORTUNE GAME
+WHEEL OF FORTUNE GAME v0.2
 
 Made by Grayson Camara
-Oct. 2025 - Nov. 2025
+Oct. 2025 - Dec. 2025
 
 ---------------------------- */
 
@@ -11,6 +11,7 @@ Oct. 2025 - Nov. 2025
 #include <LiquidCrystal_I2C.h>
 #include "Ext_Functions/Encourager.cpp"
 #include "Ext_Functions/SlideText/SlideText.h"
+#include "Ext_Functions/Wait/Wait.h"
 
 LiquidCrystal_I2C display(0x27, 16, 2);
 Encourager encourage(display);
@@ -135,15 +136,17 @@ void loop() {
     //check for score increment
     if((currentLEDIndex == WIN_INDEX) && stopButt) {
       score++;
-      //encourage.clear();
 
-      //if(score == 3 || score == 7) encourage.start(1); //write message on line 1, not line 0
+      if(score == 3 || score == 7) encourage.start(1); //write message on line 1, not line 0
 
-      //tone(BUZZERPIN, 2000, 50);
+      tone(BUZZERPIN, 2000, 50);
       Serial.println("Score: " + String(score));
       
-      display.setCursor(7, 0);  //print score to display
-      display.print(score);   
+      //print score to display
+      display.setCursor(0, 0);
+      display.print("Score: ");
+      display.setCursor(7, 0);
+      display.print(score);  
         
       // Wait for button release to stop multiple increments
       while(stopButt) {
@@ -239,7 +242,6 @@ void cycleLEDs() {
   }
   
   if(!stopButt) {
-    // update index with wrap instead of shifting a mask; this avoids accidental over-/underflow
     if(scrollReverse) {
       currentLEDIndex = (currentLEDIndex + LED_COUNT - 1) % LED_COUNT;
     } else {
@@ -286,16 +288,7 @@ void cycleLEDs() {
 int randomGen() {
   int idx = random(0, LED_COUNT);
   while(idx == WIN_INDEX) {
-    int idx = random(0, LED_COUNT);
+    idx = random(0, LED_COUNT);
   }
   return idx;
-}
-
-//non-blocking delay
-void wait(int dur) {
-  unsigned long preTime = millis();
-
-  while((millis() - preTime) < dur) {}
-
-  return;
 }

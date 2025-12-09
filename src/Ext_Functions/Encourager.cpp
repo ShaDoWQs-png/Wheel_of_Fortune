@@ -1,5 +1,6 @@
 #include <Arduino.h>
 #include <LiquidCrystal_I2C.h>
+#include "Ext_Functions/Wait/Wait.h"
 
 class Encourager {
   private:
@@ -9,6 +10,10 @@ class Encourager {
   public:
     Encourager(LiquidCrystal_I2C &lcd) : _lcd(lcd) {};
 
+      /**
+       * @brief Start showing a random encourager message on the LCD.
+       * @param line The LCD line to print to (default 0).
+       */
       void start(int line = 0) {
         _line = line;
         int message = random(0, 10);
@@ -48,13 +53,11 @@ class Encourager {
             break;
           }
 
+          wait(2000); //display for 2 seconds
+
+          _lcd.setCursor(0, _line);
+          _lcd.print("                ");
+
           return;
-        };
-
-      void clear() {
-        _lcd.setCursor(0, _line);
-        _lcd.print("                ");
-
-        return;
       };
 };
