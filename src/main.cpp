@@ -21,15 +21,14 @@ void diffSelect();
 void cycleLEDs();
 int randomGen();
 
-//pin definitions
-constexpr int DATAPIN = 12;
-constexpr int CLKPIN = 11;
-constexpr int LATCHPIN = 10;
-constexpr int STOPBUTTPIN = 13;
-constexpr int DIFFPIN = 6;  //not currently used
+//pin definitions (ATTinyCore Arduino pin numbers)
+constexpr int DATAPIN = 0;
+constexpr int CLKPIN = 10;
+constexpr int LATCHPIN = 9;
+constexpr int STOPBUTTPIN = 5;
 constexpr int BUZZERPIN = 7;
 constexpr int RESETPIN = 8;
-constexpr int DIFFPOT = A3;
+constexpr int DIFFPOT = 1;
 
 //lcd char definitions
 constexpr byte blockIndex = 0;
@@ -55,9 +54,9 @@ unsigned int score = 0;
 bool superHard = false;
 
 void setup() {
-  Serial.begin(9600);
-  randomSeed(analogRead(0));
-  
+  delay(200);
+  randomSeed(analogRead(DIFFPOT));
+
   //shift register setup
   pinMode(DATAPIN, OUTPUT);
   pinMode(LATCHPIN, OUTPUT);
@@ -65,16 +64,19 @@ void setup() {
 
   //other component setup
   pinMode(STOPBUTTPIN, INPUT_PULLUP);
-  pinMode(DIFFPIN, INPUT_PULLUP);
   pinMode(DIFFPOT, INPUT);
   pinMode(BUZZERPIN, OUTPUT);
   pinMode(RESETPIN, OUTPUT);
   
   //display setup
   display.init();
+  delay(100);
   display.createChar(blockIndex, blockArr);
+  delay(50);
   display.backlight();
+  delay(50);
   display.setCursor(0, 0);
+  delay(50);
 
   //sliding text setup
   SlideText::setDisplay(display);
@@ -117,8 +119,6 @@ void loop() {
   display.print("Go!");
   tone(BUZZERPIN, 1000, 200);
 
-  Serial.println("Difficulty set to: " + String(diffLvl));
-
   //prepare for game start
   delay(1000);
   display.clear();
@@ -132,6 +132,7 @@ void loop() {
 
   while(score < 10) {   //score checking/led cycle loop
     cycleLEDs();
+    encourage.update();
 
     //check for score increment
     if((currentLEDIndex == WIN_INDEX) && stopButt) {
@@ -140,13 +141,11 @@ void loop() {
       if(score == 3 || score == 7) encourage.start(1); //write message on line 1, not line 0
 
       tone(BUZZERPIN, 2000, 50);
-      Serial.println("Score: " + String(score));
       
       //print score to display
       display.setCursor(0, 0);
       display.print("Score: ");
-      display.setCursor(7, 0);
-      display.print(score);  
+      display.print(score);
         
       // Wait for button release to stop multiple increments
       while(stopButt) {
@@ -190,7 +189,6 @@ void diffSelect() {
 
   static int lastDiffLvl = -1;
   // Only redraw the difficulty row when the value actually changes to avoid flicker
-  Serial.println(String(lastDiffLvl) + " / " + String(diffLvl));
 
   if(diffLvl == lastDiffLvl) return;
   lastDiffLvl = diffLvl;

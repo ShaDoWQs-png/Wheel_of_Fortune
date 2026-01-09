@@ -9,12 +9,12 @@ namespace SlideText {
         lcd = &_lcd;
     }
 
-    void slideText(String txt) {
-        if(!lcd) return;
+    void slideText(const char* txt) {
+        if(!lcd || !txt) return;
 
         unsigned long preTime;
 
-        for(unsigned int i = 0; i < txt.length(); i++) {
+        for(unsigned int i = 0; txt[i] != '\0'; i++) {
             lcd->print(txt[i]);
 
             preTime = millis();

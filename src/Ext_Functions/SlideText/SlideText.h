@@ -12,5 +12,5 @@ namespace SlideText{
      * @brief Slide text onto the LCD display one character at a time.
      * @param txt The text to slide onto the display.
      */
-    void slideText(String txt);
+    void slideText(const char* txt);
 }

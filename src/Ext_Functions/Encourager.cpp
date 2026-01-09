@@ -4,8 +4,11 @@
 
 class Encourager {
   private:
-        LiquidCrystal_I2C &_lcd;
-        int _line;
+    LiquidCrystal_I2C &_lcd;
+    int _line;
+    unsigned long _preTime;
+    unsigned long _duration = 3000; //duration in ms to show message
+    bool _running = false;
 
   public:
     Encourager(LiquidCrystal_I2C &lcd) : _lcd(lcd) {};
@@ -21,43 +24,34 @@ class Encourager {
         _lcd.setCursor(0, line);
         
         switch (message) {
-          case 0:
-            _lcd.print("Good!");
-            break;
-          case 1:
-            _lcd.print("Nice!");
-            break;
-          case 2:
-            _lcd.print("Great Job!");
-            break;
-          case 3:
-            _lcd.print("Not bad!");
-            break;
-          case 4:
-            _lcd.print("Cool!");
-            break;
-          case 5:
-            _lcd.print("I could do that!");
-            break;
-          case 6:
-            _lcd.print("Wow!");
-            break;
-          case 7:
-            _lcd.print("So Graceful!");
-            break;
-          case 8:
-            _lcd.print("Excellent!");
-            break;
-          case 9:
-            _lcd.print("What Timing!");
-            break;
+          case 0: _lcd.print("Good!"); break;
+          case 1: _lcd.print("Nice!"); break;
+          case 2: _lcd.print("Great Job!"); break;
+          case 3: _lcd.print("Not bad!"); break;
+          case 4: _lcd.print("Cool!"); break;
+          case 5: _lcd.print("I could do that!"); break;
+          case 6: _lcd.print("Wow!"); break;
+          case 7: _lcd.print("So Graceful!"); break;
+          case 8: _lcd.print("Excellent!"); break;
+          case 9: _lcd.print("What Timing!"); break;
           }
 
-          wait(2000); //display for 2 seconds
-
-          _lcd.setCursor(0, _line);
-          _lcd.print("                ");
-
+          _preTime = millis();
+          _running = true;
           return;
+      };
+
+      /**
+       * @brief Update the Encourager state; should be called frequently.
+       */
+      void update() {
+        if (!_running) return;
+
+        if(millis() - _preTime > _duration) {
+        _lcd.setCursor(0, _line);
+        _lcd.print("                ");}
+        _running = false;
+
+        return;
       };
 };
