@@ -5,7 +5,14 @@ WHEEL OF FORTUNE GAME v0.2
 Made by Grayson Camara
 Oct. 2025 - Dec. 2025
 
----------------------------- */
+---------------------------- 
+
+Please uncomment the line the corresponds to the board you're using, for pin mappings: 
+
+//-----------------------*/
+//#define ARDUINO_UNO
+#define ATTINY84
+//-----------------------*/
 
 //libaries, object definitions, function declarations
 #include <LiquidCrystal_I2C.h>
@@ -21,14 +28,27 @@ void diffSelect();
 void cycleLEDs();
 int randomGen();
 
-//pin definitions (ATTinyCore Arduino pin numbers)
-constexpr int DATAPIN = 0;
-constexpr int CLKPIN = 10;
-constexpr int LATCHPIN = 1;
-constexpr int STOPBUTTPIN = 5;
-constexpr int BUZZERPIN = 7;
-constexpr int RESETPIN = 8;
-constexpr int DIFFPOT = A1;
+#ifdef ATTINY84
+  //pin definitions (Arduino Uno pin numbers)
+  constexpr int DATAPIN = 12;
+  constexpr int CLKPIN = 11;
+  constexpr int LATCHPIN = 10;
+  constexpr int STOPBUTTPIN = 13;
+  constexpr int BUZZERPIN = 7;
+  constexpr int RESETPIN = 8;
+  constexpr int DIFFPOT = A3;
+#elif defined(ARDUINO_UNO)
+  //pin definitions (ATTinyCore Arduino pin numbers)
+  constexpr int DATAPIN = 0;
+  constexpr int CLKPIN = 10;
+  constexpr int LATCHPIN = 1;
+  constexpr int STOPBUTTPIN = 5;
+  constexpr int BUZZERPIN = 7;
+  constexpr int RESETPIN = 8;
+  constexpr int DIFFPOT = A1;
+#else
+  #error "Please define pin mappings for your board."
+#endif
 
 //lcd char definitions
 constexpr byte blockIndex = 0;
