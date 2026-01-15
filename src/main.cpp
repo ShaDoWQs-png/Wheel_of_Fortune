@@ -24,11 +24,11 @@ int randomGen();
 //pin definitions (ATTinyCore Arduino pin numbers)
 constexpr int DATAPIN = 0;
 constexpr int CLKPIN = 10;
-constexpr int LATCHPIN = 9;
+constexpr int LATCHPIN = 1;
 constexpr int STOPBUTTPIN = 5;
 constexpr int BUZZERPIN = 7;
 constexpr int RESETPIN = 8;
-constexpr int DIFFPOT = 1;
+constexpr int DIFFPOT = A1;
 
 //lcd char definitions
 constexpr byte blockIndex = 0;
@@ -64,7 +64,6 @@ void setup() {
 
   //other component setup
   pinMode(STOPBUTTPIN, INPUT_PULLUP);
-  pinMode(DIFFPOT, INPUT);
   pinMode(BUZZERPIN, OUTPUT);
   pinMode(RESETPIN, OUTPUT);
   
